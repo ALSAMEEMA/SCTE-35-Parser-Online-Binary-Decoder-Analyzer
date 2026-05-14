@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Decode SCTE-35 splice info sections from Base64, Hex, or HLS/DASH tags. View splice commands, segmentation descriptors, break durations, and timing.">
+  <meta name="theme-color" content="#0a0a0f">
+  <meta property="og:title" content="SCTE-35 Parser">
+  <meta property="og:description" content="Decode SCTE-35 splice info — commands, descriptors, break durations, PTS timing. Zero dependencies.">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📡</text></svg>">
+  <title>SCTE-35 Parser</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <div class="container">
+
+    <!-- HEADER -->
+    <div class="header">
+      <div>
+        <h1>SCTE-35 Parser</h1>
+        <p class="subtitle">Decode splice info sections — commands, descriptors, break durations &amp; PTS timing</p>
+      </div>
+      <button id="themeToggle" class="icon-btn" title="Toggle theme" aria-label="Toggle theme">☀️</button>
+    </div>
+
+    <!-- INPUT -->
+    <div class="card">
+      <!-- SAMPLES -->
+      <div class="samples-row">
+        <label class="input-label">Try a Sample</label>
+        <div class="samples-list" id="samplesList"></div>
+      </div>
+
+      <label for="scteInput" class="input-label">SCTE-35 Data</label>
+      <p class="input-hint">Paste Base64, Hex, HLS #EXT-X-SCTE35 / #EXT-X-DATERANGE tag, or DASH EventStream XML</p>
+      <textarea id="scteInput" rows="4" placeholder="e.g. /DAlAAAAAAAAAP/wFAUAAAABf+/+ANgNkv4AFRogAAEBAQAAN7cP5g=="></textarea>
+
+      <div class="btn-row">
+        <button id="parseBtn" class="primary-btn">Parse SCTE-35</button>
+        <button id="clearBtn" class="secondary-btn">Clear</button>
+      </div>
+
+      <div id="errorMessage" class="error-message" style="display:none;"></div>
+    </div>
+
+    <!-- MANIFEST PARSER -->
+    <div class="card manifest-section" style="margin-top:16px;">
+      <label class="input-label">📋 Manifest SCTE-35 Scanner</label>
+      <p class="input-hint">Paste an HLS/DASH manifest URL or content to find and decode all SCTE-35 markers</p>
+      <div class="manifest-input-row">
+        <input type="text" id="manifestUrlInput" class="manifest-url-input" placeholder="https://example.com/master.m3u8 or paste manifest content below">
+        <button id="fetchManifestBtn" class="primary-btn small-btn">Fetch</button>
+      </div>
+      <label class="cors-toggle"><input type="checkbox" id="corsProxyToggle" checked> Use CORS proxy for cross-origin URLs</label>
+      <textarea id="manifestInput" rows="6" placeholder="Or paste HLS (.m3u8) or DASH (.mpd) manifest content here"></textarea>
+      <div class="btn-row">
+        <button id="scanManifestBtn" class="primary-btn">Scan for SCTE-35</button>
+        <button id="clearManifestBtn" class="secondary-btn">Clear</button>
+      </div>
+      <div id="manifestError" class="error-message" style="display:none;"></div>
+    </div>
+
+    <!-- MANIFEST RESULTS -->
+    <div id="manifestResults"></div>
+
+    <!-- HISTORY -->
+    <div id="historySection" class="card history-section" style="display:none; margin-top:16px;">
+      <div class="section-header">
+        <label class="input-label">Recent Parses</label>
+        <button id="clearHistoryBtn" class="secondary-btn small-btn">Clear History</button>
+      </div>
+      <div class="history-list" id="historyList"></div>
+    </div>
+
+    <!-- RESULTS -->
+    <div id="results"></div>
+
+    <!-- EXPORT -->
+    <div id="exportArea" class="card export-area" style="display:none; margin-top:16px;">
+      <div class="section-header">
+        <label class="input-label">Export Results</label>
+        <div class="btn-row">
+          <button id="copyJsonBtn" class="secondary-btn small-btn">📋 Copy JSON</button>
+          <button id="downloadJsonBtn" class="secondary-btn small-btn">💾 Download JSON</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- HEX VIEWER -->
+    <div id="hexViewer" class="card" style="display:none; margin-top:16px;">
+      <label class="input-label">Hex Viewer</label>
+      <div class="hex-legend" id="hexLegend"></div>
+      <div class="hex-dump" id="hexDump"></div>
+    </div>
+
+    <!-- BINARY VIEWER -->
+    <div id="binaryViewer" class="card" style="display:none; margin-top:16px;">
+      <label class="input-label">Binary Bit Viewer</label>
+      <p class="input-hint">Color-coded bit fields showing exact bit positions</p>
+      <div class="binary-dump" id="binaryDump"></div>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <p class="footer-tagline">🛠️ Streaming Toolbox — decode, inspect, and debug like a pro</p>
+    <nav class="footer-links">
+      <a href="https://alsameema.github.io/CMAF-Inspector" target="_blank" rel="noopener">📦 CMAF Inspector</a>
+      <a href="https://alsameema.github.io/DASH_Manifest_Analyser/" target="_blank" rel="noopener">📊 DASH MPD Analyser</a>
+      <a href="https://alsameema.github.io/HLS_Manifest_Analyser/" target="_blank" rel="noopener">📺 HLS Manifest Viewer</a>
+      <a href="https://alsameema.github.io/DRM_PSSH_Decoder/" target="_blank" rel="noopener">🔐 DRM PSSH Decoder</a>
+      <a href="https://alsameema.github.io/Codec_String_Parser/" target="_blank" rel="noopener">🎬 Codec String Parser</a>
+    </nav>
+  </footer>
+
+  <script src="script.js"></script>
+
+</body>
+
+</html>
